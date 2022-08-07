@@ -14,21 +14,27 @@ public class RealmManager {
     
     private var realm: Realm
     
-    static let shared = RealmManager()
+    public static var configuration: Realm.Configuration?
     
-    init(config: Realm.Configuration = RealmManager.realmDeleteIfNeeded()) {
+    private static func realmDeleteIfNeededConfig() -> Realm.Configuration {
+        var config = Realm.Configuration.defaultConfiguration
+        config.deleteRealmIfMigrationNeeded = true
+        return config
+    }
+    
+    public static let shared = RealmManager()
+    
+    init() {
         do {
-            realm = try Realm.init(configuration: config)
+            if let safeConfig = RealmManager.configuration  {
+                realm = try Realm.init(configuration: safeConfig)
+            } else {
+                realm = try Realm.init(configuration: RealmManager.realmDeleteIfNeededConfig())
+            }
         }
         catch {
             fatalError(error.localizedDescription)
         }
-    }
-    
-    public static func realmDeleteIfNeeded() -> Realm.Configuration {
-        var config = Realm.Configuration.defaultConfiguration
-        config.deleteRealmIfMigrationNeeded = true
-        return config
     }
     
     /// Add the given objects to the database.
