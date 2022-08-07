@@ -42,7 +42,7 @@ public class RealmManager {
     }
     
     /// Add the given objects to the database.
-    public func add<T: Object>(_ data: [T], onError: onError) {
+    public func add<T: Object>(_ data: [T], onError: @escaping onError) {
         do {
             try realm.write{
                 realm.add(data)
