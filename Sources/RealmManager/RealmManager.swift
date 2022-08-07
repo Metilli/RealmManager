@@ -10,9 +10,13 @@ import RealmSwift
 
 public class RealmManager {
     
-    public typealias onError = (_ error: Error?) -> Void
+    public typealias onError = (Error?) -> Void
     
     private var realm: Realm
+    
+    public var realmFileURL: URL? {
+        realm.configuration.fileURL
+    }
     
     public static var configuration: Realm.Configuration?
     
@@ -38,7 +42,7 @@ public class RealmManager {
     }
     
     /// Add the given objects to the database.
-    public func add<T: Object>(_ data: [T], onError: @escaping onError) {
+    public func add<T: Object>(_ data: [T], onError: onError) {
         do {
             try realm.write{
                 realm.add(data)
@@ -76,7 +80,7 @@ public class RealmManager {
     /// - Parameter object: The type of object to retrieve.
     /// - Parameter predicate: Predicate for filtering.
     /// - Returns: The results in the database for the given object type.
-    public func addAndDelete<T: Object>(itemToAdd: T, itemToDelete: T.Type, cascadeDelete: Bool = true, onError: @escaping (_ error: Error?)-> Void) {
+    public func addAndDelete<T: Object>(itemToAdd: T, itemToDelete: T.Type, cascadeDelete: Bool = true, onError: @escaping onError) {
         do {
             let deleteObject = realm.objects(itemToDelete)
             try realm.write {
