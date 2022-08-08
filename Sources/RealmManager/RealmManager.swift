@@ -10,7 +10,7 @@ import RealmSwift
 
 public class RealmManager {
     
-    public typealias onError = (Error?) -> Void
+    public typealias onError = (Error) -> Void
     
     private var realm: Realm
     
@@ -75,19 +75,17 @@ public class RealmManager {
         return realm.object(ofType: type, forPrimaryKey: key)
     }
     
-    /// Retrieves the given object type from the database.
+    /// Delete all entities by given object type and add given object to database
     ///
-    /// - Parameter object: The type of object to retrieve.
-    /// - Parameter predicate: Predicate for filtering.
-    /// - Returns: The results in the database for the given object type.
-    public func addAndDelete<T: Object>(itemToAdd: T, itemToDelete: T.Type, cascadeDelete: Bool = true, onError: @escaping onError) {
+    /// - Parameter object: The object to add the database.
+    /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
+    public func replaceObject<T: Object>(_ object: T, cascadeDelete: Bool = true, onError: @escaping onError) {
         do {
-            let deleteObject = realm.objects(itemToDelete)
+            let deleteObjects = realm.objects(T.self)
             try realm.write {
-                realm.delete(deleteObject, cascading: true)
-                realm.add(itemToAdd)
+                realm.delete(deleteObjects, cascading: true)
+                realm.add(object)
             }
-            onError(nil)
         } catch {
             onError(error)
         }

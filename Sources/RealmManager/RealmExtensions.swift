@@ -10,39 +10,43 @@ import RealmSwift
 
 // MARK: - Detach Protocol
 protocol DetachableObject: AnyObject {
-  func detached() -> Self
+    func detached() -> Self
 }
 
 extension Object: DetachableObject {
-  func detached() -> Self {
-    let detached = type(of: self).init()
-    for property in objectSchema.properties {
-      guard let value = value(forKey: property.name) else {
-        continue
-      }
-      if let detachable = value as? DetachableObject {
-        detached.setValue(detachable.detached(), forKey: property.name)
-      } else { // Then it is a primitive
-        detached.setValue(value, forKey: property.name)
-      }
+    
+    ///Returns an object  independent from Realm
+    public func detached() -> Self {
+        let detached = type(of: self).init()
+        for property in objectSchema.properties {
+            guard let value = value(forKey: property.name) else {
+                continue
+            }
+            if let detachable = value as? DetachableObject {
+                detached.setValue(detachable.detached(), forKey: property.name)
+            } else { // Then it is a primitive
+                detached.setValue(value, forKey: property.name)
+            }
+        }
+        return detached
     }
-    return detached
-  }
 }
 
 extension List: DetachableObject {
-  func detached() -> List<Element> {
-    let result = List<Element>()
-    forEach {
-      if let detachableObject = $0 as? DetachableObject,
-        let element = detachableObject.detached() as? Element {
-        result.append(element)
-      } else { // Then it is a primitive
-        result.append($0)
-      }
+    
+    ///Returns an object  independent from Realm
+    public func detached() -> List<Element> {
+        let result = List<Element>()
+        forEach {
+            if let detachableObject = $0 as? DetachableObject,
+               let element = detachableObject.detached() as? Element {
+                result.append(element)
+            } else { // Then it is a primitive
+                result.append($0)
+            }
+        }
+        return result
     }
-    return result
-  }
 }
 
 // MARK: - Cascade Deleting
@@ -57,7 +61,7 @@ extension Realm: CascadeDeleting {
             delete(obj, cascading: cascading)
         }
     }
-
+    
     public func delete<Entity: Object>(_ entity: Entity, cascading: Bool) {
         if cascading {
             cascadeDelete(entity)
@@ -74,11 +78,11 @@ extension Realm {
         toBeDeleted.insert(entity)
         while !toBeDeleted.isEmpty {
             guard let element = toBeDeleted.removeFirst() as? Object,
-                !element.isInvalidated else { continue }
+                  !element.isInvalidated else { continue }
             resolve(element: element, toBeDeleted: &toBeDeleted)
         }
     }
-
+    
     public func resolve(element: Object, toBeDeleted: inout Set<RLMObjectBase>) {
         element.objectSchema.properties.forEach {
             guard let value = element.value(forKey: $0.name) else { return }
