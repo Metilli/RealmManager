@@ -6,8 +6,8 @@ RealmManager is a powerful wrapper to manage realm objects more easly.
 
 Swift Package Manager
 
-File > Swift Packages > Add Package Dependency
-Add https://github.com/Metilli/RealmManager.git
+File > Swift Packages > Add Package Dependency \
+Add https://github.com/Metilli/RealmManager.git \
 Select "Branch" with "main"
 
 ## Configuration
