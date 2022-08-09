@@ -8,17 +8,9 @@
 import Foundation
 import RealmSwift
 
-public class RealmManager {
+public struct RealmManager {
     
     public typealias onError = (Error) -> Void
-    
-    private var realm: Realm
-    
-    public var realmFileURL: URL? {
-        realm.configuration.fileURL
-    }
-    
-    public static var configuration: Realm.Configuration?
     
     private static func realmDeleteIfNeededConfig() -> Realm.Configuration {
         var config = Realm.Configuration.defaultConfiguration
@@ -26,23 +18,27 @@ public class RealmManager {
         return config
     }
     
-    public static let shared = RealmManager()
-    
-    init() {
+    public static func setup(configuration: Realm.Configuration? = nil) {
         do {
-            if let safeConfig = RealmManager.configuration  {
-                realm = try Realm.init(configuration: safeConfig)
+            if let safeConfig = configuration  {
+                _ = try Realm(configuration: safeConfig)
             } else {
-                realm = try Realm.init(configuration: RealmManager.realmDeleteIfNeededConfig())
+                _ = try Realm(configuration: RealmManager.realmDeleteIfNeededConfig())
             }
-        }
-        catch {
+        } catch {
             fatalError(error.localizedDescription)
         }
     }
     
+    public static var realmFileURL: URL? {
+        let realm = try! Realm()
+        return realm.configuration.fileURL
+    }
+    
     /// Add the given objects to the database.
-    public func add<T: Object>(_ data: [T], onError: @escaping onError) {
+    public static func add<T: Object>(_ data: [T], onError: @escaping onError) {
+        let realm = try! Realm()
+        
         do {
             try realm.write{
                 realm.add(data)
@@ -53,7 +49,7 @@ public class RealmManager {
     }
     
     /// Add the given object to the database.
-    public func add<T: Object>(_ data: T, onError: @escaping onError) {
+    public static func add<T: Object>(_ data: T, onError: @escaping onError) {
         add([data], onError: onError)
     }
     
@@ -62,7 +58,8 @@ public class RealmManager {
     /// - Parameter object: The type of object to retrieve.
     /// - Parameter predicate: Predicate for filtering.
     /// - Returns: The results in the database for the given object type.
-    public func objects<T: Object>(_ type: T.Type, predicate: NSPredicate? = nil) -> Results<T> {
+    public static func objects<T: Object>(_ type: T.Type, predicate: NSPredicate? = nil) -> Results<T> {
+        let realm = try! Realm()
         return predicate == nil ? realm.objects(type) : realm.objects(type).filter(predicate!)
     }
     
@@ -71,7 +68,8 @@ public class RealmManager {
     /// - Parameter object: The type of object to retrieve.
     /// - Parameter key: Primary key of the object.
     /// - Returns: The result in the database for the given object type with spesific primary key..
-    public func object<T: Object>(_ type: T.Type, key: Any) -> T? {
+    public static func object<T: Object>(_ type: T.Type, key: Any) -> T? {
+        let realm = try! Realm()
         return realm.object(ofType: type, forPrimaryKey: key)
     }
     
@@ -79,8 +77,9 @@ public class RealmManager {
     ///
     /// - Parameter object: The object to add the database.
     /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
-    public func replaceObject<T: Object>(_ object: T, cascadeDelete: Bool = true, onError: @escaping onError) {
+    public static func replaceObject<T: Object>(_ object: T, cascadeDelete: Bool = true, onError: @escaping onError) {
         do {
+            let realm = try Realm()
             let deleteObjects = realm.objects(T.self)
             try realm.write {
                 realm.delete(deleteObjects, cascading: true)
@@ -95,8 +94,9 @@ public class RealmManager {
     ///
     /// - Parameter object: The object will be deleted.
     /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
-    public func delete<T: Object>(_ object: [T], cascading: Bool = true, onError: @escaping onError) {
+    public static func delete<T: Object>(_ object: [T], cascading: Bool = true, onError: @escaping onError) {
         do {
+            let realm = try Realm()
             try realm.write{
                 realm.delete(object, cascading: cascading)
             }
@@ -109,13 +109,14 @@ public class RealmManager {
     ///
     /// - Parameter object: The object will be deleted.
     /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
-    public func delete<T: Object>(_ object: T, cascading: Bool = true, onError: @escaping onError) {
+    public static func delete<T: Object>(_ object: T, cascading: Bool = true, onError: @escaping onError) {
         delete([object], cascading: cascading, onError: onError)
     }
     
     /// Clear all data from the database.
-    public func deleteAll(onError: @escaping onError) {
+    public static func deleteAll(onError: @escaping onError) {
         do {
+            let realm = try Realm()
             try realm.write{
                 realm.deleteAll()
             }
