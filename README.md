@@ -10,6 +10,13 @@ File > Swift Packages > Add Package Dependency \
 Add https://github.com/Metilli/RealmManager.git \
 Select "Branch" with "main"
 
+## Features
+
+- Detach realm objects from realm.
+- Cascade deleting.
+- Cascade deleting object type and add new object with one function(replaceObject). 
+- Reducing the number of code that needs to be written
+
 ## Configuration
 
 > The default configuration is Realm.Configuration.defaultConfiguration with deleteRealmIfMigrationNeeded property true. So please be careful while using this manager. Your data maybe lost during development.
@@ -18,19 +25,16 @@ If you need to migrate your database scheme or disable auto delete the database,
 
 For example:
 
-    var myRealmConfig = Realm.Configuration.defaultConfiguration
-    myRealmConfig.deleteRealmIfMigrationNeeded = false
-    RealmManager.configuration = myRealmConfig
+    let myRealmConfiguration: Realm.Configuration
     
-    RealmManager.shared.add(RealmObj) { error in
-        print(error.localizedDescription)
-    }
+    RealmManager.setup(configuration: myRealmConfiguration)
 
 
 ## Credits
 
-Thanks Krzysztof Rodak for cascade deleting.
-https://gist.github.com/krodak
-
 Thanks Roberto Frontado for detach realm objects.
 https://github.com/robertofrontado
+
+Thanks Krzysztof Rodak for cascade deleting.
+https://github.com/krodak
+
