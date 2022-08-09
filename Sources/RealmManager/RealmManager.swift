@@ -33,6 +33,9 @@ public struct RealmManager {
     }
     
     /// Add the given objects to the database.
+    /// 
+    /// - Parameter object: The type of object to add.
+    /// - Parameter update: The realm update policy
     public static func add<T: Object>(_ data: [T], update: Realm.UpdatePolicy = .error) {
         let realm = try! Realm()
         try! realm.write{
@@ -41,6 +44,9 @@ public struct RealmManager {
     }
     
     /// Add the given object to the database.
+    ///
+    /// - Parameter object: The type of object to add.
+    /// - Parameter update: The realm update policy
     public static func add<T: Object>(_ data: T, update: Realm.UpdatePolicy = .error) {
         add([data], update: update)
     }
