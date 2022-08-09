@@ -10,7 +10,7 @@ import RealmSwift
 
 public struct RealmManager {
     
-    public typealias onError = (Error) -> Void
+    public typealias completion = (Result<Any?,Error>) -> ()
     
     private static func realmDeleteIfNeededConfig() -> Realm.Configuration {
         var config = Realm.Configuration.defaultConfiguration
@@ -36,21 +36,21 @@ public struct RealmManager {
     }
     
     /// Add the given objects to the database.
-    public static func add<T: Object>(_ data: [T], onError: @escaping onError) {
-        let realm = try! Realm()
-        
+    public static func add<T: Object>(_ data: [T], completionHandler: @escaping completion) {
         do {
+            let realm = try Realm()
             try realm.write{
                 realm.add(data)
             }
+            completionHandler(.success(nil))
         } catch {
-            onError(error)
+            completionHandler(.failure(error))
         }
     }
     
     /// Add the given object to the database.
-    public static func add<T: Object>(_ data: T, onError: @escaping onError) {
-        add([data], onError: onError)
+    public static func add<T: Object>(_ data: T, completionHandler: @escaping completion) {
+        add([data], completionHandler: completionHandler)
     }
     
     /// Retrieves the given object type from the database.
@@ -77,7 +77,7 @@ public struct RealmManager {
     ///
     /// - Parameter object: The object to add the database.
     /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
-    public static func replaceObject<T: Object>(_ object: T, cascadeDelete: Bool = true, onError: @escaping onError) {
+    public static func replaceObject<T: Object>(_ object: T, cascadeDelete: Bool = true, completionHandler: @escaping completion) {
         do {
             let realm = try Realm()
             let deleteObjects = realm.objects(T.self)
@@ -85,8 +85,9 @@ public struct RealmManager {
                 realm.delete(deleteObjects, cascading: true)
                 realm.add(object)
             }
+            completionHandler(.success(nil))
         } catch {
-            onError(error)
+            completionHandler(.failure(error))
         }
     }
     
@@ -94,14 +95,15 @@ public struct RealmManager {
     ///
     /// - Parameter object: The object will be deleted.
     /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
-    public static func delete<T: Object>(_ object: [T], cascading: Bool = true, onError: @escaping onError) {
+    public static func delete<T: Object>(_ object: [T], cascading: Bool = true, completionHandler: @escaping completion) {
         do {
             let realm = try Realm()
             try realm.write{
                 realm.delete(object, cascading: cascading)
             }
+            completionHandler(.success(nil))
         } catch {
-            onError(error)
+            completionHandler(.failure(error))
         }
     }
     
@@ -109,19 +111,20 @@ public struct RealmManager {
     ///
     /// - Parameter object: The object will be deleted.
     /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
-    public static func delete<T: Object>(_ object: T, cascading: Bool = true, onError: @escaping onError) {
-        delete([object], cascading: cascading, onError: onError)
+    public static func delete<T: Object>(_ object: T, cascading: Bool = true, completionHandler: @escaping completion) {
+        delete([object], cascading: cascading, completionHandler: completionHandler)
     }
     
     /// Clear all data from the database.
-    public static func deleteAll(onError: @escaping onError) {
+    public static func deleteAll(completionHandler: @escaping completion) {
         do {
             let realm = try Realm()
             try realm.write{
                 realm.deleteAll()
             }
+            completionHandler(.success(nil))
         } catch {
-            onError(error)
+            completionHandler(.failure(error))
         }
     }
     
