@@ -16,7 +16,7 @@ Select "Branch" with "main"
 - Cascade deleting.
 - Cascade deleting object type and add new object with one function(replaceObject). 
 - Reducing the number of code that needs to be written
-- Creates new instance for each calls. You don't need to be worry about threads :)
+- Creates new instance for each call. You don't need to be worry about threads :)
 
 ## Configuration
 
