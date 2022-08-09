@@ -10,8 +10,6 @@ import RealmSwift
 
 public struct RealmManager {
     
-    public typealias completion = (Result<Any?,Error>) -> ()
-    
     private static func realmDeleteIfNeededConfig() -> Realm.Configuration {
         var config = Realm.Configuration.defaultConfiguration
         config.deleteRealmIfMigrationNeeded = true
@@ -31,26 +29,20 @@ public struct RealmManager {
     }
     
     public static var realmFileURL: URL? {
-        let realm = try! Realm()
-        return realm.configuration.fileURL
+        return try! Realm().configuration.fileURL
     }
     
     /// Add the given objects to the database.
-    public static func add<T: Object>(_ data: [T], completionHandler: @escaping completion) {
-        do {
-            let realm = try Realm()
-            try realm.write{
-                realm.add(data)
-            }
-            completionHandler(.success(nil))
-        } catch {
-            completionHandler(.failure(error))
+    public static func add<T: Object>(_ data: [T], update: Realm.UpdatePolicy = .error) {
+        let realm = try! Realm()
+        try! realm.write{
+            realm.add(data, update: update)
         }
     }
     
     /// Add the given object to the database.
-    public static func add<T: Object>(_ data: T, completionHandler: @escaping completion) {
-        add([data], completionHandler: completionHandler)
+    public static func add<T: Object>(_ data: T, update: Realm.UpdatePolicy = .error) {
+        add([data], update: update)
     }
     
     /// Retrieves the given object type from the database.
@@ -77,17 +69,12 @@ public struct RealmManager {
     ///
     /// - Parameter object: The object to add the database.
     /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
-    public static func replaceObject<T: Object>(_ object: T, cascadeDelete: Bool = true, completionHandler: @escaping completion) {
-        do {
-            let realm = try Realm()
-            let deleteObjects = realm.objects(T.self)
-            try realm.write {
-                realm.delete(deleteObjects, cascading: true)
-                realm.add(object)
-            }
-            completionHandler(.success(nil))
-        } catch {
-            completionHandler(.failure(error))
+    public static func replaceObject<T: Object>(_ object: T, cascadeDelete: Bool = true) {
+        let realm = try! Realm()
+        let deleteObjects = realm.objects(T.self)
+        try! realm.write {
+            realm.delete(deleteObjects, cascading: true)
+            realm.add(object)
         }
     }
     
@@ -95,15 +82,10 @@ public struct RealmManager {
     ///
     /// - Parameter object: The object will be deleted.
     /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
-    public static func delete<T: Object>(_ object: [T], cascading: Bool = true, completionHandler: @escaping completion) {
-        do {
-            let realm = try Realm()
-            try realm.write{
-                realm.delete(object, cascading: cascading)
-            }
-            completionHandler(.success(nil))
-        } catch {
-            completionHandler(.failure(error))
+    public static func delete<T: Object>(_ object: [T], cascading: Bool = true) {
+        let realm = try! Realm()
+        try! realm.write{
+            realm.delete(object, cascading: cascading)
         }
     }
     
@@ -111,20 +93,15 @@ public struct RealmManager {
     ///
     /// - Parameter object: The object will be deleted.
     /// - Parameter cascading: A Boolean value that determines whether the object's nested objects will be deleted.
-    public static func delete<T: Object>(_ object: T, cascading: Bool = true, completionHandler: @escaping completion) {
-        delete([object], cascading: cascading, completionHandler: completionHandler)
+    public static func delete<T: Object>(_ object: T, cascading: Bool = true) {
+        delete([object], cascading: cascading)
     }
     
     /// Clear all data from the database.
-    public static func deleteAll(completionHandler: @escaping completion) {
-        do {
-            let realm = try Realm()
-            try realm.write{
-                realm.deleteAll()
-            }
-            completionHandler(.success(nil))
-        } catch {
-            completionHandler(.failure(error))
+    public static func deleteAll() {
+        let realm = try! Realm()
+        try! realm.write{
+            realm.deleteAll()
         }
     }
     
